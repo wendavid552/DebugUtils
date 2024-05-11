@@ -1,3 +1,10 @@
+DebugUtils 1.0.4
+================
+- Add player bound toggles:
+    - `/debugutils server` will toggle the debug features on the server (and if done via a player also for the player)
+    - `/debugutils player` will toggle the feature for the passed in players. If this feature is not enabled 
+       via `server` first this will do nothing.
+  
 DebugUtils 1.0.3
 ================
 - Port 1.20.1

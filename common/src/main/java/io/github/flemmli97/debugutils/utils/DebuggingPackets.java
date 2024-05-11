@@ -51,7 +51,7 @@ public class DebuggingPackets {
             buf.writeUtf(type.unwrapKey().get().location().toString());
             buf.writeInt(type.value().maxTickets());
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_POI_ADDED_PACKET, buf);
-            sendToAll(packet, level);
+            sendToAll(packet, level, DebugToggles.DEBUG_POI);
         }
     }
 
@@ -60,7 +60,7 @@ public class DebuggingPackets {
             FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
             buf.writeBlockPos(pos);
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_POI_REMOVED_PACKET, buf);
-            sendToAll(packet, level);
+            sendToAll(packet, level, DebugToggles.DEBUG_POI);
         }
     }
 
@@ -71,7 +71,7 @@ public class DebuggingPackets {
             buf.writeBlockPos(pos);
             buf.writeInt(level.getPoiManager().getFreeTickets(pos));
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_POI_TICKET_COUNT_PACKET, buf);
-            sendToAll(packet, level);
+            sendToAll(packet, level, DebugToggles.DEBUG_POI);
         }
     }
 
@@ -81,7 +81,7 @@ public class DebuggingPackets {
             buf.writeVarLong(level.getGameTime());
             buf.writeBlockPos(pos);
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_NEIGHBORSUPDATE_PACKET, buf);
-            sendToAll(packet, (ServerLevel) level);
+            sendToAll(packet, (ServerLevel) level, DebugToggles.DEBUG_NEIGHBORSUPDATES);
         }
     }
 
@@ -112,7 +112,7 @@ public class DebuggingPackets {
                 buf.writeBoolean(piece.getGenDepth() == 0); //Assume its this? Since the boolean is used as start piece on the handler
             });
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_STRUCTURES_PACKET, buf);
-            sendToAll(packet, serverLevel);
+            sendToAll(packet, serverLevel, DebugToggles.DEBUG_STRUCTURES);
         }
     }
 
@@ -132,7 +132,7 @@ public class DebuggingPackets {
             buf.writeFloat(maxDistanceToWaypoint);
             path.writeToStream(buf);
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_PATHFINDING_PACKET, buf);
-            sendToAll(packet, (ServerLevel) level);
+            sendToAll(packet, (ServerLevel) level, DebugToggles.DEBUG_PATHS);
         }
     }
 
@@ -148,7 +148,7 @@ public class DebuggingPackets {
                 buf.writeUtf(w.getGoal().toString());
             });
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_GOAL_SELECTOR, buf);
-            sendToAll(packet, (ServerLevel) level);
+            sendToAll(packet, (ServerLevel) level, DebugToggles.DEBUG_GOALS);
         }
     }
 
@@ -158,7 +158,7 @@ public class DebuggingPackets {
             buf.writeInt(raids.size());
             raids.forEach(raid -> buf.writeBlockPos(raid.getCenter()));
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_RAIDS, buf);
-            sendToAll(packet, level);
+            sendToAll(packet, level, DebugToggles.DEBUG_RAIDS);
         }
     }
 
@@ -184,7 +184,7 @@ public class DebuggingPackets {
 
             DebugPackets.writeBrain(entity, buf);
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_BRAIN, buf);
-            sendToAll(packet, (ServerLevel) entity.level());
+            sendToAll(packet, (ServerLevel) entity.level(), DebugToggles.DEBUG_BRAINS);
         }
     }
 
@@ -228,7 +228,7 @@ public class DebuggingPackets {
             bee.getBlacklistedHives().forEach(h -> buf.writeUtf(h.toShortString()));
 
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_BEE, buf);
-            sendToAll(packet, (ServerLevel) bee.level());
+            sendToAll(packet, (ServerLevel) bee.level(), DebugToggles.DEBUG_BEES);
         }
     }
 
@@ -240,7 +240,7 @@ public class DebuggingPackets {
             buf.writeDouble(pos.y());
             buf.writeDouble(pos.z());
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_GAME_EVENT, buf);
-            sendToAll(packet, (ServerLevel) level);
+            sendToAll(packet, (ServerLevel) level, DebugToggles.DEBUG_GAME_EVENT);
         }
     }
 
@@ -250,7 +250,7 @@ public class DebuggingPackets {
             PositionSourceType.toNetwork(gameEventListener.getListenerSource(), buf);
             buf.writeInt(gameEventListener.getListenerRadius());
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_GAME_EVENT_LISTENER, buf);
-            sendToAll(packet, (ServerLevel) level);
+            sendToAll(packet, (ServerLevel) level, DebugToggles.DEBUG_GAME_EVENT_LISTENER);
         }
     }
 
@@ -263,11 +263,14 @@ public class DebuggingPackets {
             buf.writeInt(blockState.getValue(BeehiveBlock.HONEY_LEVEL));
             buf.writeBoolean(hiveBlockEntity.isSedated());
             ClientboundCustomPayloadPacket packet = new ClientboundCustomPayloadPacket(ClientboundCustomPayloadPacket.DEBUG_HIVE, buf);
-            sendToAll(packet, (ServerLevel) level);
+            sendToAll(packet, (ServerLevel) level, DebugToggles.DEBUG_BEE_HIVES);
         }
     }
 
-    private static void sendToAll(Packet<?> pkt, ServerLevel level) {
-        level.players().forEach(p -> p.connection.send(pkt));
+    private static void sendToAll(Packet<?> pkt, ServerLevel level, DebugToggles.ResourcedToggle toggle) {
+        level.players().forEach(p -> {
+            if (DebugToggles.isEnabled(p, toggle))
+                p.connection.send(pkt);
+        });
     }
 }

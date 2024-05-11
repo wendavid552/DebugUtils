@@ -5,11 +5,15 @@ import io.github.flemmli97.debugutils.network.S2CSpawnChunk;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 
 /**
@@ -20,6 +24,8 @@ public class DebugToggles {
     public static ResourceLocation ALL = new ResourceLocation("debug/all");
 
     private static final Map<ResourceLocation, ResourcedToggle> GETTER = new TreeMap<>();
+
+    private static final Map<UUID, Set<ResourceLocation>> PLAYER_ENABLED = new HashMap<>();
 
     public static final ResourcedToggle DEBUG_POI = register(new ResourceLocation("debug/poi"));
     public static final ResourcedToggle DEBUG_NEIGHBORSUPDATES = register(ClientboundCustomPayloadPacket.DEBUG_NEIGHBORSUPDATE_PACKET);
@@ -63,20 +69,24 @@ public class DebugToggles {
         return GETTER.keySet();
     }
 
-    public static void onLogin(ServerPlayer player) {
+    public static void onLogout(ServerPlayer player) {
+        PLAYER_ENABLED.remove(player.getUUID());
+    }
+
+    public static void toggleAll(Collection<ServerPlayer> players, boolean updateOnly) {
         GETTER.values().forEach(t -> {
-            if (t.get()) {
-                t.updateFor(Set.of(player));
+            if (!t.get()) {
+                if (updateOnly)
+                    t.updateFor(players);
+                else
+                    t.toggleFor(players, false);
             }
         });
     }
 
-    public static void toggleAllOff(Collection<ServerPlayer> player) {
-        GETTER.values().forEach(t -> {
-            if (!t.get()) {
-                t.toggleFor(player);
-            }
-        });
+    public static boolean isEnabled(Player player, ResourcedToggle toggle) {
+        Set<ResourceLocation> enabled = PLAYER_ENABLED.get(player.getUUID());
+        return enabled != null && enabled.contains(toggle.id);
     }
 
     public static class ResourcedToggle {
@@ -95,17 +105,29 @@ public class DebugToggles {
             this.onToggle = onToggle;
         }
 
-        public boolean toggleFor(Collection<ServerPlayer> players) {
-            this.on = !this.on;
+        public void toggleFor(Collection<ServerPlayer> players, boolean toggle) {
+            this.on = toggle;
             this.updateFor(players);
-            return this.on;
         }
 
         public void updateFor(Collection<ServerPlayer> players) {
-            if (this.onToggle != null)
-                this.onToggle.accept(this.on, players);
             S2CDebugToggle pkt = new S2CDebugToggle(this.id, this.on);
-            players.forEach(p -> Network.INSTANCE.sendToClient(pkt, p));
+            players.forEach(player -> {
+                Set<ResourceLocation> enabled = PLAYER_ENABLED.computeIfAbsent(player.getUUID(), k -> new HashSet<>());
+                if (this.on)
+                    enabled.add(this.id);
+                else {
+                    enabled.remove(this.id);
+                    if (enabled.isEmpty())
+                        PLAYER_ENABLED.remove(player.getUUID());
+                }
+                Network.INSTANCE.sendToClient(pkt, player);
+            });
+            if (this.onToggle != null) {
+                if (this.on)
+                    players = players.stream().filter(p -> isEnabled(p, this)).toList();
+                this.onToggle.accept(this.on, players);
+            }
         }
 
         public boolean get() {

@@ -1,6 +1,6 @@
 package io.github.flemmli97.debugutils.forge;
 
-import io.github.flemmli97.debugutils.Commands;
+import io.github.flemmli97.debugutils.DebugCommands;
 import io.github.flemmli97.debugutils.DebugToggles;
 import io.github.flemmli97.debugutils.DebugUtils;
 import io.github.flemmli97.debugutils.client.AdditionalDebugRenderers;
@@ -22,7 +22,7 @@ public class DebugUtilsForge {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(this::common);
         MinecraftForge.EVENT_BUS.addListener(this::command);
-        MinecraftForge.EVENT_BUS.addListener(this::joinServer);
+        MinecraftForge.EVENT_BUS.addListener(this::leaveServer);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             MinecraftForge.EVENT_BUS.addListener(DebugUtilsClient::disconnect);
             AdditionalDebugRenderers.init();
@@ -34,11 +34,11 @@ public class DebugUtilsForge {
     }
 
     public void command(RegisterCommandsEvent event) {
-        Commands.register(event.getDispatcher());
+        DebugCommands.register(event.getDispatcher());
     }
 
-    public void joinServer(PlayerEvent.PlayerLoggedInEvent event) {
+    public void leaveServer(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer serverPlayer)
-            DebugToggles.onLogin(serverPlayer);
+            DebugToggles.onLogout(serverPlayer);
     }
 }
