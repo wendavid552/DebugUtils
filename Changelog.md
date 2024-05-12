@@ -1,3 +1,8 @@
+DebugUtils 1.0.5
+================
+- Port to 1.20.6
+- Simplify command. Remove `/debugutils server` as that's the default now
+
 DebugUtils 1.0.4
 ================
 - Add player bound toggles:
