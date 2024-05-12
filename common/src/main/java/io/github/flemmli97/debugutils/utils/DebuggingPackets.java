@@ -30,6 +30,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.BehaviorControl;
 import net.minecraft.world.entity.ai.behavior.BlockPosTracker;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
@@ -42,6 +43,7 @@ import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.monster.breeze.Breeze;
 import net.minecraft.world.entity.monster.warden.Warden;
+import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.schedule.Activity;
@@ -66,6 +68,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DebuggingPackets {
 
@@ -157,33 +160,42 @@ public class DebuggingPackets {
     @SuppressWarnings("deprecation")
     public static void sendBrainPacket(LivingEntity entity) {
         if (DebugToggles.DEBUG_BRAINS.get() && !entity.level().isClientSide) {
+            Brain<?> brain = entity.getBrain();
             String profession = "";
             int xp = 0;
             String inventory = "";
             Path path = null;
+            if (brain.hasMemoryValue(MemoryModuleType.PATH)) {
+                path = brain.getMemory(MemoryModuleType.PATH).get();
+            }
             boolean wantsGolem = false;
             int angerLevel = -1;
-            List<String> activities = List.of();
-            List<String> behaviors = List.of();
-            List<String> memories = List.of();
+            if (entity instanceof Warden warden) {
+                angerLevel = warden.getClientAngerLevel();
+            }
+            List<String> activities = brain.getActiveActivities().stream().map(Activity::getName).toList();
+            List<String> behaviors = brain.getRunningBehaviors().stream().map(BehaviorControl::debugString).toList();
+            List<String> memories = getMemoryDescriptions(entity, entity.level().getGameTime());
             List<String> gossips = List.of();
-            Set<BlockPos> pois = Set.of(); // No idea where this is either saved or calculated
-            Set<BlockPos> potentialPois = Set.of(); // No idea where this is either saved or calculated
-            if (entity instanceof Mob mob) {
-                activities = mob.getBrain().getActiveActivities().stream().map(Activity::getName).toList();
-                behaviors = mob.getBrain().getRunningBehaviors().stream().map(BehaviorControl::debugString).toList();
-                path = mob.getNavigation().getPath();
-                memories = getMemoryDescriptions(entity, entity.level().getGameTime());
+            Set<BlockPos> pois = Set.of();
+            Set<BlockPos> potentialPois = Set.of();
+            if (entity instanceof InventoryCarrier carrier) {
+                inventory = carrier.getInventory().isEmpty() ? "" : carrier.getInventory().toString();
             }
             if (entity instanceof Villager villager) {
                 profession = villager.getVillagerData().getProfession().name();
                 xp = villager.getVillagerXp();
-                inventory = villager.getInventory().toString();
                 wantsGolem = villager.wantsToSpawnGolem(entity.level().getGameTime());
-                gossips = villager.getGossips().getGossipEntries().entrySet().stream().map(e -> e.getKey() + ": " + e.getValue().toString()).toList();
-            }
-            if (entity instanceof Warden warden) {
-                angerLevel = warden.getAngerManagement().getActiveAnger(warden);
+                List<String> list = Lists.newArrayList();
+                villager.getGossips().getGossipEntries().forEach((key, value) -> {
+                    String string = DebugEntityNameGenerator.getEntityName(key);
+                    value.forEach((gossipType, integer) -> list.add(string + ": " + gossipType + ": " + integer));
+                });
+                gossips = list;
+                pois = Stream.of(MemoryModuleType.JOB_SITE, MemoryModuleType.HOME, MemoryModuleType.MEETING_POINT).map(brain::getMemory)
+                        .flatMap(Optional::stream).map(GlobalPos::pos).collect(Collectors.toSet());
+                potentialPois = brain.getMemory(MemoryModuleType.POTENTIAL_JOB_SITE)
+                        .map(p -> Set.of(p.pos())).orElse(Set.of());
             }
             BrainDebugPayload.BrainDump dump = new BrainDebugPayload.BrainDump(entity.getUUID(), entity.getId(),
                     entity.getName().getString(), profession, xp, entity.getHealth(), entity.getMaxHealth(), entity.position(),

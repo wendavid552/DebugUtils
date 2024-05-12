@@ -1,5 +1,1 @@
 apply from: "https://raw.githubusercontent.com/Flemmli97/GradleScripts/mc-architectury-fabric-neoforge/common.gradle"
-
-loom {
-    accessWidenerPath.set project(":fabric").file("src/main/resources/debugutils.accesswidener")
-}

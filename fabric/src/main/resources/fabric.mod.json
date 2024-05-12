@@ -26,7 +26,6 @@
   "mixins": [
     "debugutils.mixins.json"
   ],
-  "accessWidener": "debugutils.accesswidener",
   "depends": {
     "fabric": ">=${fabric_version}",
     "minecraft": ">=${mcversion}"
