@@ -108,6 +108,8 @@ public class DebugToggles {
         public void toggleFor(Collection<ServerPlayer> players, boolean toggle) {
             this.on = toggle;
             this.updateFor(players);
+            if (!this.on)
+                PLAYER_ENABLED.forEach((id, enabled) -> enabled.remove(this.id));
         }
 
         public void updateFor(Collection<ServerPlayer> players) {
