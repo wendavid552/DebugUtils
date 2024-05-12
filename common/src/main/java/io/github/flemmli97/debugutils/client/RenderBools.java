@@ -1,6 +1,16 @@
 package io.github.flemmli97.debugutils.client;
 
-import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.custom.BeeDebugPayload;
+import net.minecraft.network.protocol.common.custom.BrainDebugPayload;
+import net.minecraft.network.protocol.common.custom.BreezeDebugPayload;
+import net.minecraft.network.protocol.common.custom.GameEventDebugPayload;
+import net.minecraft.network.protocol.common.custom.GameEventListenerDebugPayload;
+import net.minecraft.network.protocol.common.custom.GoalDebugPayload;
+import net.minecraft.network.protocol.common.custom.HiveDebugPayload;
+import net.minecraft.network.protocol.common.custom.NeighborUpdatesDebugPayload;
+import net.minecraft.network.protocol.common.custom.PathfindingDebugPayload;
+import net.minecraft.network.protocol.common.custom.RaidsDebugPayload;
+import net.minecraft.network.protocol.common.custom.StructuresDebugPayload;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
@@ -16,16 +26,17 @@ public class RenderBools {
 
     static {
         HANDLERS.put(new ResourceLocation("debug/poi"), b -> DEBUG_POI = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_NEIGHBORSUPDATE_PACKET, b -> DEBUG_BLOCKUPDATES = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_STRUCTURES_PACKET, b -> DEBUG_STRUCTURES = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_PATHFINDING_PACKET, b -> DEBUG_PATHS = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_GOAL_SELECTOR, b -> DEBUG_GOALS = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_RAIDS, b -> DEBUG_RAIDS = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_BRAIN, b -> DEBUG_BRAIN = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_BEE, b -> DEBUG_BEE = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_GAME_EVENT, b -> DEBUG_GAME_EVENT = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_GAME_EVENT_LISTENER, b -> DEBUG_GAME_EVENT_LISTENER = b);
-        HANDLERS.put(ClientboundCustomPayloadPacket.DEBUG_HIVE, b -> DEBUG_HIVE = b);
+        HANDLERS.put(NeighborUpdatesDebugPayload.TYPE.id(), b -> DEBUG_BLOCKUPDATES = b);
+        HANDLERS.put(StructuresDebugPayload.TYPE.id(), b -> DEBUG_STRUCTURES = b);
+        HANDLERS.put(PathfindingDebugPayload.TYPE.id(), b -> DEBUG_PATHS = b);
+        HANDLERS.put(GoalDebugPayload.TYPE.id(), b -> DEBUG_GOALS = b);
+        HANDLERS.put(RaidsDebugPayload.TYPE.id(), b -> DEBUG_RAIDS = b);
+        HANDLERS.put(BrainDebugPayload.TYPE.id(), b -> DEBUG_BRAIN = b);
+        HANDLERS.put(BeeDebugPayload.TYPE.id(), b -> DEBUG_BEE = b);
+        HANDLERS.put(BreezeDebugPayload.TYPE.id(), b -> DEBUG_BREEZE = b);
+        HANDLERS.put(GameEventDebugPayload.TYPE.id(), b -> DEBUG_GAME_EVENT = b);
+        HANDLERS.put(GameEventListenerDebugPayload.TYPE.id(), b -> DEBUG_GAME_EVENT_LISTENER = b);
+        HANDLERS.put(HiveDebugPayload.TYPE.id(), b -> DEBUG_HIVE = b);
 
         HANDLERS.put(new ResourceLocation("debug/water"), b -> DEBUG_WATER = b);
         HANDLERS.put(new ResourceLocation("debug/heightmap"), b -> DEBUG_HEIGHTMAP = b);
@@ -44,6 +55,7 @@ public class RenderBools {
     public static boolean DEBUG_RAIDS;
     public static boolean DEBUG_BRAIN;
     public static boolean DEBUG_BEE;
+    public static boolean DEBUG_BREEZE;
     public static boolean DEBUG_GAME_EVENT;
     public static boolean DEBUG_GAME_EVENT_LISTENER;
     public static boolean DEBUG_HIVE;

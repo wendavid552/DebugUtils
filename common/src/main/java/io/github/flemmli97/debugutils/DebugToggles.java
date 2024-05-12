@@ -2,7 +2,17 @@ package io.github.flemmli97.debugutils;
 
 import io.github.flemmli97.debugutils.network.S2CDebugToggle;
 import io.github.flemmli97.debugutils.network.S2CSpawnChunk;
-import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.custom.BeeDebugPayload;
+import net.minecraft.network.protocol.common.custom.BrainDebugPayload;
+import net.minecraft.network.protocol.common.custom.BreezeDebugPayload;
+import net.minecraft.network.protocol.common.custom.GameEventDebugPayload;
+import net.minecraft.network.protocol.common.custom.GameEventListenerDebugPayload;
+import net.minecraft.network.protocol.common.custom.GoalDebugPayload;
+import net.minecraft.network.protocol.common.custom.HiveDebugPayload;
+import net.minecraft.network.protocol.common.custom.NeighborUpdatesDebugPayload;
+import net.minecraft.network.protocol.common.custom.PathfindingDebugPayload;
+import net.minecraft.network.protocol.common.custom.RaidsDebugPayload;
+import net.minecraft.network.protocol.common.custom.StructuresDebugPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -28,16 +38,17 @@ public class DebugToggles {
     private static final Map<UUID, Set<ResourceLocation>> PLAYER_ENABLED = new HashMap<>();
 
     public static final ResourcedToggle DEBUG_POI = register(new ResourceLocation("debug/poi"));
-    public static final ResourcedToggle DEBUG_NEIGHBORSUPDATES = register(ClientboundCustomPayloadPacket.DEBUG_NEIGHBORSUPDATE_PACKET);
-    public static final ResourcedToggle DEBUG_STRUCTURES = register(ClientboundCustomPayloadPacket.DEBUG_STRUCTURES_PACKET);
-    public static final ResourcedToggle DEBUG_PATHS = register(ClientboundCustomPayloadPacket.DEBUG_PATHFINDING_PACKET);
-    public static final ResourcedToggle DEBUG_GOALS = register(ClientboundCustomPayloadPacket.DEBUG_GOAL_SELECTOR);
-    public static final ResourcedToggle DEBUG_RAIDS = register(ClientboundCustomPayloadPacket.DEBUG_RAIDS);
-    public static final ResourcedToggle DEBUG_BRAINS = register(ClientboundCustomPayloadPacket.DEBUG_BRAIN);
-    public static final ResourcedToggle DEBUG_BEES = register(ClientboundCustomPayloadPacket.DEBUG_BEE);
-    public static final ResourcedToggle DEBUG_GAME_EVENT = register(ClientboundCustomPayloadPacket.DEBUG_GAME_EVENT);
-    public static final ResourcedToggle DEBUG_GAME_EVENT_LISTENER = register(ClientboundCustomPayloadPacket.DEBUG_GAME_EVENT_LISTENER);
-    public static final ResourcedToggle DEBUG_BEE_HIVES = register(ClientboundCustomPayloadPacket.DEBUG_HIVE);
+    public static final ResourcedToggle DEBUG_NEIGHBORSUPDATES = register(NeighborUpdatesDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_STRUCTURES = register(StructuresDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_PATHS = register(PathfindingDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_GOALS = register(GoalDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_RAIDS = register(RaidsDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_BRAINS = register(BrainDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_BEES = register(BeeDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_BREEZE = register(BreezeDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_GAME_EVENT = register(GameEventDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_GAME_EVENT_LISTENER = register(GameEventListenerDebugPayload.TYPE.id());
+    public static final ResourcedToggle DEBUG_BEE_HIVES = register(HiveDebugPayload.TYPE.id());
 
     public static final ResourcedToggle DEBUG_WATER = register(new ResourceLocation("debug/water"));
     public static final ResourcedToggle DEBUG_HEIGHTMAP = register(new ResourceLocation("debug/heightmap"));
@@ -108,6 +119,8 @@ public class DebugToggles {
         public void toggleFor(Collection<ServerPlayer> players, boolean toggle) {
             this.on = toggle;
             this.updateFor(players);
+            if (!this.on)
+                PLAYER_ENABLED.forEach((id, enabled) -> enabled.remove(this.id));
         }
 
         public void updateFor(Collection<ServerPlayer> players) {

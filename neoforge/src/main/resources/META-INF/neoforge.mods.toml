@@ -1,7 +1,9 @@
 modLoader="javafml"
-loaderVersion="[40,)"
+loaderVersion="[${loader_version},)"
 license="GNU LGPLv3"
 issueTrackerURL="https://github.com/Flemmli97/DebugUtils/issues"
+[[mixins]]
+config = "debugutils.mixins.json"
 [[mods]]
 modId="debugutils"
 version="${version}"
@@ -12,7 +14,7 @@ authors="Flemmli97"
 description='''Enables various debugging tools from mojang'''
 [[dependencies.debugutils]]
 modId="minecraft"
-mandatory=true
+type="required"
 versionRange="[${mcversion},)"
 ordering="NONE"
 side="BOTH"

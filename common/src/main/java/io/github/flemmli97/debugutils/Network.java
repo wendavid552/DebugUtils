@@ -1,6 +1,6 @@
 package io.github.flemmli97.debugutils;
 
-import io.github.flemmli97.debugutils.network.Packet;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 
 public interface Network {
@@ -9,5 +9,5 @@ public interface Network {
             "io.github.flemmli97.debugutils.fabric.NetworkImpl",
             "io.github.flemmli97.debugutils.forge.NetworkImpl");
 
-    void sendToClient(Packet message, ServerPlayer player);
+    void sendToClient(CustomPacketPayload pkt, ServerPlayer player);
 }

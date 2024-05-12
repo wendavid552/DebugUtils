@@ -9,7 +9,6 @@ public class DebugUtilsClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        ClientPacketHandler.registerClientPackets();
         ClientLoginConnectionEvents.DISCONNECT.register((handler, client) -> RenderBools.onDisconnect());
         AdditionalDebugRenderers.init();
     }

@@ -6,6 +6,7 @@ import io.github.flemmli97.debugutils.client.RenderBools;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.debug.BeeDebugRenderer;
 import net.minecraft.client.renderer.debug.BrainDebugRenderer;
+import net.minecraft.client.renderer.debug.BreezeDebugRenderer;
 import net.minecraft.client.renderer.debug.DebugRenderer;
 import net.minecraft.client.renderer.debug.GameEventListenerRenderer;
 import net.minecraft.client.renderer.debug.GoalSelectorDebugRenderer;
@@ -54,6 +55,8 @@ public class DebugRendererMixin {
     private GoalSelectorDebugRenderer goalSelectorRenderer;
     @Shadow
     private GameEventListenerRenderer gameEventListenerRenderer;
+    @Shadow
+    private BreezeDebugRenderer breezeDebugRenderer;
 
     @Inject(method = "render", at = @At("RETURN"))
     private void doDebugRenderers(PoseStack poseStack, MultiBufferSource.BufferSource bufferSource, double camX, double camY, double camZ, CallbackInfo info) {
@@ -85,6 +88,8 @@ public class DebugRendererMixin {
             this.goalSelectorRenderer.render(poseStack, bufferSource, camX, camY, camZ);
         if (RenderBools.DEBUG_GAME_EVENT || RenderBools.DEBUG_GAME_EVENT_LISTENER)
             this.gameEventListenerRenderer.render(poseStack, bufferSource, camX, camY, camZ);
+        if (RenderBools.DEBUG_BREEZE)
+            this.breezeDebugRenderer.render(poseStack, bufferSource, camX, camY, camZ);
         AdditionalDebugRenderers.render(poseStack, bufferSource, camX, camY, camZ);
     }
 

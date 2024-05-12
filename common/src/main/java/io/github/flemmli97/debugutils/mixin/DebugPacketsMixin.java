@@ -2,12 +2,14 @@ package io.github.flemmli97.debugutils.mixin;
 
 import io.github.flemmli97.debugutils.utils.DebuggingPackets;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.monster.breeze.Breeze;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -86,8 +88,13 @@ public class DebugPacketsMixin {
         DebuggingPackets.sendBeeInfo(bee);
     }
 
+    @Inject(method = "sendBreezeInfo", at = @At("HEAD"))
+    private static void debugutils_Breeze(Breeze breeze, CallbackInfo info) {
+        DebuggingPackets.sendBreezeInfo(breeze);
+    }
+
     @Inject(method = "sendGameEventInfo", at = @At("HEAD"))
-    private static void debugutils_gameEvent(Level level, GameEvent gameEvent, Vec3 pos, CallbackInfo info) {
+    private static void debugutils_gameEvent(Level level, Holder<GameEvent> gameEvent, Vec3 pos, CallbackInfo info) {
         DebuggingPackets.sendGameEventInfo(level, gameEvent, pos);
     }
 
