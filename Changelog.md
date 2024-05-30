@@ -1,3 +1,7 @@
+DebugUtils 1.0.5.b
+================
+- Fabric: Fix client packet registering on server
+
 DebugUtils 1.0.5
 ================
 - Port to 1.20.6
