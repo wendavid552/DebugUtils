@@ -1,6 +1,7 @@
 DebugUtils 1.0.5.b
 ================
-- Fabric: Fix client packet registering on server
+- Update to 1.21  
+~~- Fabric: Fix client packet registering on server~~
 
 DebugUtils 1.0.5
 ================

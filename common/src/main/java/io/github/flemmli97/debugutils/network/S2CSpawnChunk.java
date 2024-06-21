@@ -12,7 +12,7 @@ import net.minecraft.server.level.TicketType;
 
 public class S2CSpawnChunk implements CustomPacketPayload {
 
-    public static final Type<S2CSpawnChunk> TYPE = new Type<>(new ResourceLocation(DebugUtils.MODID, "s2c_spawn_chunk"));
+    public static final Type<S2CSpawnChunk> TYPE = new Type<>(ResourceLocation.tryBuild(DebugUtils.MODID, "s2c_spawn_chunk"));
     public static final StreamCodec<RegistryFriendlyByteBuf, S2CSpawnChunk> STREAM_CODEC = new StreamCodec<>() {
         @Override
         public S2CSpawnChunk decode(RegistryFriendlyByteBuf buf) {

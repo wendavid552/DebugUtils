@@ -15,7 +15,7 @@ public class AdditionalDebugRenderers {
     private static final Map<ResourceLocation, DebugRenderer.SimpleDebugRenderer> RENDERERS = new HashMap<>();
 
     public static void init() {
-        register(new ResourceLocation(DebugUtils.MODID, "spawn_chunks"), SpawnChunkRenderer.INSTANCE);
+        register(ResourceLocation.tryBuild(DebugUtils.MODID, "spawn_chunks"), SpawnChunkRenderer.INSTANCE);
     }
 
     public static synchronized void register(ResourceLocation res, DebugRenderer.SimpleDebugRenderer renderer) {

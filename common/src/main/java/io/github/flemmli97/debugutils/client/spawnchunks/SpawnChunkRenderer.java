@@ -3,7 +3,9 @@ package io.github.flemmli97.debugutils.client.spawnchunks;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
@@ -26,8 +28,8 @@ public class SpawnChunkRenderer implements DebugRenderer.SimpleDebugRenderer {
 
     public static final SpawnChunkRenderer INSTANCE = new SpawnChunkRenderer();
 
-    private static final BufferBuilder QUADS = new BufferBuilder(256);
-    private static final BufferBuilder LINES = new BufferBuilder(256);
+    private static final ByteBufferBuilder QUADS = new ByteBufferBuilder(256);
+    private static final ByteBufferBuilder LINES = new ByteBufferBuilder(256);
 
     private int spawnTicketLevel = 11;
 
@@ -51,8 +53,9 @@ public class SpawnChunkRenderer implements DebugRenderer.SimpleDebugRenderer {
         AABB spawnChunkAABB = new AABB(minX, level.getMinBuildHeight(), minZ, minX + 16, level.getMaxBuildHeight(), minZ + 16)
                 .move(-camX, -camY, -camZ);
 
-        QUADS.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        LINES.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder quads = new BufferBuilder(QUADS, VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+
+        BufferBuilder lines = new BufferBuilder(LINES, VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.disableCull();
         RenderSystem.enableBlend();
@@ -63,19 +66,23 @@ public class SpawnChunkRenderer implements DebugRenderer.SimpleDebugRenderer {
         float renderDistance = Minecraft.getInstance().gameRenderer.getRenderDistance() + 16;
 
         if (viewPos.distanceToSqr(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5) < renderDistance * renderDistance)
-            this.renderBox(QUADS, new AABB(spawnPos).move(-camX, -camY, -camZ).inflate(-0.0001), 220 / 255f, 100 / 255f, 100 / 255f, 0.5f);
+            this.renderBox(quads, new AABB(spawnPos).move(-camX, -camY, -camZ).inflate(-0.0001), 220 / 255f, 100 / 255f, 100 / 255f, 0.5f);
 
         this.renderBorder(renderDistance, spawnChunkAABB, SectionPos.sectionToBlockCoord(range),
-                QUADS, LINES, 220 / 255f, 100 / 255f, 100 / 255f);
+                quads, lines, 220 / 255f, 100 / 255f, 100 / 255f);
 
         this.renderBorder(renderDistance, spawnChunkAABB, SectionPos.sectionToBlockCoord(range - 2),
-                QUADS, LINES, 20 / 255f, 170 / 255f, 10 / 255f);
+                quads, lines, 20 / 255f, 170 / 255f, 10 / 255f);
 
-        BufferUploader.drawWithShader(QUADS.end());
+        MeshData quadData = quads.build();
+        if (quadData != null)
+            BufferUploader.drawWithShader(quadData);
 
         RenderSystem.disableBlend();
         RenderSystem.lineWidth(3.0F);
-        BufferUploader.drawWithShader(LINES.end());
+        MeshData lineData = lines.build();
+        if (lineData != null)
+            BufferUploader.drawWithShader(lineData);
         RenderSystem.lineWidth(1.0F);
 
         RenderSystem.enableCull();
@@ -115,35 +122,35 @@ public class SpawnChunkRenderer implements DebugRenderer.SimpleDebugRenderer {
         float maxY = (float) aabb.maxY;
         float maxZ = (float) aabb.maxZ;
 
-        consumer.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+        consumer.addVertex(minX, minY, minZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(minX, minY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(minX, maxY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(minX, maxY, minZ).setColor(red, green, blue, alpha);
 
-        consumer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
+        consumer.addVertex(maxX, maxY, minZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(maxX, maxY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(maxX, minY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(maxX, minY, minZ).setColor(red, green, blue, alpha);
 
-        consumer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
+        consumer.addVertex(minX, maxY, minZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(maxX, maxY, minZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(maxX, minY, minZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(minX, minY, minZ).setColor(red, green, blue, alpha);
 
-        consumer.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+        consumer.addVertex(maxX, maxY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(minX, maxY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(minX, minY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(maxX, minY, maxZ).setColor(red, green, blue, alpha);
 
-        consumer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
+        consumer.addVertex(maxX, minY, minZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(maxX, minY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(minX, minY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(minX, minY, minZ).setColor(red, green, blue, alpha);
 
-        consumer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-        consumer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+        consumer.addVertex(minX, maxY, minZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(minX, maxY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(maxX, maxY, maxZ).setColor(red, green, blue, alpha);
+        consumer.addVertex(maxX, maxY, minZ).setColor(red, green, blue, alpha);
     }
 
     private void renderWall(VertexConsumer consumer, AABB aabb, List<Direction> tooFar, float red, float green, float blue, float alpha) {
@@ -160,31 +167,31 @@ public class SpawnChunkRenderer implements DebugRenderer.SimpleDebugRenderer {
         boolean renderWest = !tooFar.contains(Direction.WEST);
 
         if (renderWest) {
-            consumer.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
+            consumer.addVertex(minX, minY, minZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(minX, minY, maxZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(minX, maxY, maxZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(minX, maxY, minZ).setColor(red, green, blue, alpha);
         }
 
         if (renderEast) {
-            consumer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
+            consumer.addVertex(maxX, maxY, minZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(maxX, maxY, maxZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(maxX, minY, maxZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(maxX, minY, minZ).setColor(red, green, blue, alpha);
         }
 
         if (renderNorth) {
-            consumer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(minX, minY, minZ).color(red, green, blue, alpha).endVertex();
+            consumer.addVertex(minX, maxY, minZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(maxX, maxY, minZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(maxX, minY, minZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(minX, minY, minZ).setColor(red, green, blue, alpha);
         }
 
         if (renderSouth) {
-            consumer.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).endVertex();
-            consumer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).endVertex();
+            consumer.addVertex(maxX, maxY, maxZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(minX, maxY, maxZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(minX, minY, maxZ).setColor(red, green, blue, alpha);
+            consumer.addVertex(maxX, minY, maxZ).setColor(red, green, blue, alpha);
         }
     }
 
@@ -201,47 +208,47 @@ public class SpawnChunkRenderer implements DebugRenderer.SimpleDebugRenderer {
         boolean renderWest = !tooFar.contains(Direction.WEST);
         for (float z = minZ; z < aabb.maxZ; z += 16) {
             if (renderWest) {
-                lines.vertex(minX, minY, z).color(red, green, blue, 1).endVertex();
-                lines.vertex(minX, maxY, z).color(red, green, blue, 1).endVertex();
+                lines.addVertex(minX, minY, z).setColor(red, green, blue, 1);
+                lines.addVertex(minX, maxY, z).setColor(red, green, blue, 1);
             }
 
             if (renderEast) {
-                lines.vertex(maxX, minY, z).color(red, green, blue, 1).endVertex();
-                lines.vertex(maxX, maxY, z).color(red, green, blue, 1).endVertex();
+                lines.addVertex(maxX, minY, z).setColor(red, green, blue, 1);
+                lines.addVertex(maxX, maxY, z).setColor(red, green, blue, 1);
             }
         }
 
         for (float x = minX + 16; x < aabb.maxX; x += 16) {
             if (renderNorth) {
-                lines.vertex(x, minY, minZ).color(red, green, blue, 1).endVertex();
-                lines.vertex(x, maxY, minZ).color(red, green, blue, 1).endVertex();
+                lines.addVertex(x, minY, minZ).setColor(red, green, blue, 1);
+                lines.addVertex(x, maxY, minZ).setColor(red, green, blue, 1);
             }
 
             if (renderSouth) {
-                lines.vertex(x, minY, maxZ).color(red, green, blue, 1).endVertex();
-                lines.vertex(x, maxY, maxZ).color(red, green, blue, 1).endVertex();
+                lines.addVertex(x, minY, maxZ).setColor(red, green, blue, 1);
+                lines.addVertex(x, maxY, maxZ).setColor(red, green, blue, 1);
             }
         }
 
         for (float y = minY; y < aabb.maxY; y += 16) {
             if (renderWest) {
-                lines.vertex(minX, y, minZ).color(red, green, blue, 1).endVertex();
-                lines.vertex(minX, y, maxZ).color(red, green, blue, 1).endVertex();
+                lines.addVertex(minX, y, minZ).setColor(red, green, blue, 1);
+                lines.addVertex(minX, y, maxZ).setColor(red, green, blue, 1);
             }
 
             if (renderEast) {
-                lines.vertex(maxX, y, minZ).color(red, green, blue, 1).endVertex();
-                lines.vertex(maxX, y, maxZ).color(red, green, blue, 1).endVertex();
+                lines.addVertex(maxX, y, minZ).setColor(red, green, blue, 1);
+                lines.addVertex(maxX, y, maxZ).setColor(red, green, blue, 1);
             }
 
             if (renderNorth) {
-                lines.vertex(minX, y, minZ).color(red, green, blue, 1).endVertex();
-                lines.vertex(maxX, y, minZ).color(red, green, blue, 1).endVertex();
+                lines.addVertex(minX, y, minZ).setColor(red, green, blue, 1);
+                lines.addVertex(maxX, y, minZ).setColor(red, green, blue, 1);
             }
 
             if (renderSouth) {
-                lines.vertex(minX, y, maxZ).color(red, green, blue, 1).endVertex();
-                lines.vertex(maxX, y, maxZ).color(red, green, blue, 1).endVertex();
+                lines.addVertex(minX, y, maxZ).setColor(red, green, blue, 1);
+                lines.addVertex(maxX, y, maxZ).setColor(red, green, blue, 1);
             }
         }
     }

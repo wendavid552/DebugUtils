@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 public record S2CDebugToggle(ResourceLocation toggle, boolean on) implements CustomPacketPayload {
 
-    public static final Type<S2CDebugToggle> TYPE = new Type<>(new ResourceLocation(DebugUtils.MODID, "s2c_debug_toggle"));
+    public static final Type<S2CDebugToggle> TYPE = new Type<>(ResourceLocation.tryBuild(DebugUtils.MODID, "s2c_debug_toggle"));
     public static final StreamCodec<RegistryFriendlyByteBuf, S2CDebugToggle> STREAM_CODEC = new StreamCodec<>() {
         @Override
         public S2CDebugToggle decode(RegistryFriendlyByteBuf buf) {

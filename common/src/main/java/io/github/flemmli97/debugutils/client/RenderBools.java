@@ -25,7 +25,7 @@ public class RenderBools {
     public static final Map<ResourceLocation, Consumer<Boolean>> HANDLERS = new HashMap<>();
 
     static {
-        HANDLERS.put(new ResourceLocation("debug/poi"), b -> DEBUG_POI = b);
+        HANDLERS.put(ResourceLocation.parse("debug/poi"), b -> DEBUG_POI = b);
         HANDLERS.put(NeighborUpdatesDebugPayload.TYPE.id(), b -> DEBUG_BLOCKUPDATES = b);
         HANDLERS.put(StructuresDebugPayload.TYPE.id(), b -> DEBUG_STRUCTURES = b);
         HANDLERS.put(PathfindingDebugPayload.TYPE.id(), b -> DEBUG_PATHS = b);
@@ -38,13 +38,13 @@ public class RenderBools {
         HANDLERS.put(GameEventListenerDebugPayload.TYPE.id(), b -> DEBUG_GAME_EVENT_LISTENER = b);
         HANDLERS.put(HiveDebugPayload.TYPE.id(), b -> DEBUG_HIVE = b);
 
-        HANDLERS.put(new ResourceLocation("debug/water"), b -> DEBUG_WATER = b);
-        HANDLERS.put(new ResourceLocation("debug/heightmap"), b -> DEBUG_HEIGHTMAP = b);
-        HANDLERS.put(new ResourceLocation("debug/collision"), b -> DEBUG_COLLISION = b);
-        HANDLERS.put(new ResourceLocation("debug/light"), b -> DEBUG_LIGHT = b);
-        HANDLERS.put(new ResourceLocation("debug/solid_faces"), b -> DEBUG_SOLID_FACES = b);
-        HANDLERS.put(new ResourceLocation("debug/chunk"), b -> DEBUG_CHUNK = b);
-        HANDLERS.put(new ResourceLocation("debug/spawn_chunk"), b -> DEBUG_SPAWN_CHUNK = b);
+        HANDLERS.put(ResourceLocation.parse("debug/water"), b -> DEBUG_WATER = b);
+        HANDLERS.put(ResourceLocation.parse("debug/heightmap"), b -> DEBUG_HEIGHTMAP = b);
+        HANDLERS.put(ResourceLocation.parse("debug/collision"), b -> DEBUG_COLLISION = b);
+        HANDLERS.put(ResourceLocation.parse("debug/light"), b -> DEBUG_LIGHT = b);
+        HANDLERS.put(ResourceLocation.parse("debug/solid_faces"), b -> DEBUG_SOLID_FACES = b);
+        HANDLERS.put(ResourceLocation.parse("debug/chunk"), b -> DEBUG_CHUNK = b);
+        HANDLERS.put(ResourceLocation.parse("debug/spawn_chunk"), b -> DEBUG_SPAWN_CHUNK = b);
     }
 
     public static boolean DEBUG_POI;
